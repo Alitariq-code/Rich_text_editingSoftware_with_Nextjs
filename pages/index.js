@@ -82,14 +82,10 @@ function Home() {
       editorHtml
     );
 
-    // Update the editorHtml state with Cloudinary URLs
     setEditorHtml(cloudinaryHtml);
     console.log(cloudinaryHtml);
-    const turndownService = new TurndownService();
-    const markdown = turndownService.turndown(cloudinaryHtml);
+
     setLoading(false);
-    console.log(markdown);
-    setMarkdownContent(markdown);
   };
   const handleEditorChange = async (html) => {
     setEditorHtml(html);
@@ -146,8 +142,10 @@ function Home() {
   };
 
   const togglePreview = () => {
+    console.log(editorHtml);
     setLoading(true);
     setShowPreview(!showPreview);
+    setLoading(false);
   };
 
   const clearContent = () => {
@@ -167,15 +165,10 @@ function Home() {
   const postBlog = async () => {
     try {
       setblogLoading(true);
-      console.log(markdownContent);
+      await convertToMarkdown();
 
       // Ensure that required fields are not empty before making the API call
-      if (
-        !blogTitle ||
-        !selectedCategory ||
-        !markdownContent ||
-        !selectedFile
-      ) {
+      if (!blogTitle || !selectedCategory || !editorHtml || !selectedFile) {
         alert('Please fill in all the required fields.');
         setblogLoading(false);
         return;
@@ -187,7 +180,7 @@ function Home() {
       const formData = new FormData();
       formData.append('title', blogTitle);
       formData.append('category', selectedCategory);
-      formData.append('description', markdownContent);
+      formData.append('description', editorHtml);
       formData.append('date_time', currentDateTime); // Add current date and time
 
       if (selectedFile) {
@@ -237,7 +230,7 @@ function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
           <motion.div
             className="lg:col-span-1 flex flex-col bg-white rounded-md p-6"
-            whileHover={{ scale: 1.05 }}
+            // whileHover={{ scale: 1.05 }}
           >
             <div className="mb-4">
               <label
@@ -270,19 +263,11 @@ function Home() {
                 className="px-4 py-2 border border-black-300 rounded-md bg-black text-white focus:outline-none focus:ring focus:border-blue-300 transition duration-300"
               >
                 <option value="">Select a category...</option>
-                <option value="technique_training">
-                  Technique and Training
-                </option>
-                <option value="industry_news">Industry News and Trends</option>
-                <option value="safety_responsibility">
-                  Safety and Responsibility
-                </option>
-                <option value="competition_coverage">
-                  Competition Coverage
-                </option>
-                <option value="historical_perspectives">
-                  Historical Perspectives
-                </option>
+
+                <option value="data_science">Data Science</option>
+                <option value="data_engineering">Data Engineering</option>
+                <option value="machine_learning'">Machine Learning</option>
+                <option value="deep_learning">Deep Learning</option>
               </select>
             </div>
             <div className="flex mt-8 flex-col lg:flex-row lg:items-center lg:justify-between">
@@ -293,7 +278,6 @@ function Home() {
                   <button
                     onClick={() => {
                       togglePreview();
-                      convertToMarkdown();
                     }}
                     className="bg-blue-500 text-white px-6 py-3 rounded-md hover:bg-blue-600 focus:outline-none focus:ring focus:border-blue-300 transition duration-300"
                   >
@@ -327,17 +311,16 @@ function Home() {
                 placeholder="Start typing here..."
                 modules={modules}
                 formats={formats}
-                style={{ height: '60vh', width: '100%', color: 'black' }}
+                style={{ height: '80vh', width: '100%', color: 'black' }}
               />
             </div>
           </motion.div>
 
           <motion.div
             className="lg:col-span-1 h-full bg-gray-100 rounded-md p-6"
-            whileHover={{ scale: 1.05 }}
+            // whileHover={{ scale: 1.05 }}
           >
             {blogLoading ? (
-              // Use the BeatLoader component from react-spinners
               <BeatLoader color="#36D7B7" loading={blogLoading} size={15} />
             ) : (
               <button
@@ -349,59 +332,7 @@ function Home() {
             )}
             <div className="prose max-w-full text-black">
               {showPreview && (
-                <ReactMarkdown
-                  components={{
-                    img: ({ src, alt }) => (
-                      <img
-                        src={src}
-                        alt={alt}
-                        className="max-w-full h-auto rounded-md"
-                      />
-                    ),
-                    p: ({ children }) => <p className="mb-4">{children}</p>,
-                    h1: ({ children }) => (
-                      <h1 className="text-3xl font-bold mb-4">{children}</h1>
-                    ),
-                    h2: ({ children }) => (
-                      <h2 className="text-2xl font-bold mb-3">{children}</h2>
-                    ),
-                    h3: ({ children }) => (
-                      <h3 className="text-xl font-bold mb-2">{children}</h3>
-                    ),
-                    h4: ({ children }) => (
-                      <h4 className="text-lg font-bold mb-2">{children}</h4>
-                    ),
-                    h5: ({ children }) => (
-                      <h5 className="text-base font-bold mb-1">{children}</h5>
-                    ),
-                    h6: ({ children }) => (
-                      <h6 className="text-sm font-bold mb-1">{children}</h6>
-                    ),
-                    ul: ({ children }) => (
-                      <ul className="list-disc ml-6 mb-4">{children}</ul>
-                    ),
-                    ol: ({ children }) => (
-                      <ol className="list-decimal ml-6 mb-4">{children}</ol>
-                    ),
-                    blockquote: ({ children }) => (
-                      <blockquote className="border-l-4 pl-4 italic border-blue-500 mb-4">
-                        {children}
-                      </blockquote>
-                    ),
-                    a: ({ node, ...props }) => (
-                      <a
-                        {...props}
-                        className="text-blue-500 underline hover:text-blue-700"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {props.children}
-                      </a>
-                    ),
-                  }}
-                >
-                  {markdownContent || 'No content'}
-                </ReactMarkdown>
+                <div dangerouslySetInnerHTML={{ __html: editorHtml }} />
               )}
               {!showPreview && (
                 <div className="flex items-center justify-center h-full bg-gray-200 border rounded-md">
