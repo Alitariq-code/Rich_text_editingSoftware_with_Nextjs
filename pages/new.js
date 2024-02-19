@@ -4,6 +4,7 @@ import 'react-quill/dist/quill.snow.css'; // Import the styles
 import ReactMarkdown from 'react-markdown';
 import { MdInsertEmoticon } from 'react-icons/md';
 import TurndownService from 'turndown';
+import axios from 'axios';
 import { motion } from 'framer-motion';
 
 import { BeatLoader } from 'react-spinners';
@@ -90,6 +91,7 @@ function Home() {
   const handleEditorChange = async (html) => {
     setEditorHtml(html);
   };
+  const authToken = '8ab2d4eac4cca8a659bc7345deab9ede1187bd0b';
 
   const extractLocalImageUrls = (html) => {
     console.log('will search');
@@ -187,14 +189,20 @@ function Home() {
         formData.append('image', selectedFile);
       }
 
-      // Make the POST request to your API endpoint
-      const response = await fetch('https://shotpulse.com:8000/api/v1/blog/', {
-        method: 'POST',
-        body: formData,
-      });
+      // Make the POST request to your API endpoint with the authorization token in headers
+      const response = await axios.post(
+        'https://shotpulse.com:8000/api/v1/blog/',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer 8ab2d4eac4cca8a659bc7345deab9ede1187bd0b`,
+          },
+        }
+      );
 
-      if (response.ok) {
-        const data = await response.json();
+      if (response.status === 200) {
+        const data = response.data;
         alert('Blog posted successfully:');
 
         // Clear values after successful post
@@ -205,9 +213,9 @@ function Home() {
         setBlogImage('');
         setSelectedFile(null);
 
-        // You can add any additional handling or redirection after successful post
+        // You can add any additional handling or redirection after a successful post
       } else {
-        const data = await response.json();
+        const data = response.data;
         console.log('Error details:', data);
         console.error('Error posting the blog:', response);
         // You can handle errors or show an error message to the user
@@ -263,9 +271,10 @@ function Home() {
                 className="px-4 py-2 border border-black-300 rounded-md bg-black text-white focus:outline-none focus:ring focus:border-blue-300 transition duration-300"
               >
                 <option value="">Select a category...</option>
+
                 <option value="tech_shooting">Tech & Shooting</option>
                 <option value="beginner_guide">Beginner Shooter Guide</option>
-                <option value="tactical_training">Tactical Training</option>
+                <option value="tactical_training'">Tactical Training</option>
                 <option value="safety_essentials">Safety Essentials</option>
                 <option value="sports_equipment">
                   Sports Equipment Insights

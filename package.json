@@ -12,6 +12,8 @@
   "dependencies": {
     "@react-icons/all-files": "^4.1.0",
     "@uiw/react-markdown-preview": "^5.0.7",
+    "axios": "^1.6.7",
+    "axois": "^0.0.1-security",
     "framer-motion": "^11.0.3",
     "html-to-react": "^1.7.0",
     "next": "14.1.0",
